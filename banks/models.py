@@ -4,4 +4,4 @@ from django.db import models
 
 
 class Bank(models.Model):
-    bank_name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30)
