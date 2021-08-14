@@ -9,4 +9,3 @@ class History(models.Model):
     transaction_amount = models.IntegerField()
     transaction_source = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, related_name='source_account')
     transaction_destination = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, related_name="destination_account")
-
