@@ -3,6 +3,8 @@ from rest_framework import serializers
 from .models import Customer
 
 
+# serializers are defined here
+
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
@@ -17,7 +19,7 @@ class CustomerLoginSerializer(serializers.Serializer):
 class CustomerGetInfoSerializer(serializers.Serializer):
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    identity_code = serializers.IntegerField()
+    identity_code = serializers.CharField()
     username = serializers.CharField()
     password = serializers.IntegerField()
 
