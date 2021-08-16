@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import mixins, GenericViewSet
 from rest_framework.decorators import action, authentication_classes
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from .serializer import CustomerSerializer, CustomerLoginSerializer, CustomerGetInfoSerializer
 
@@ -17,11 +18,16 @@ class CustomerViewSet(mixins.CreateModelMixin,
                       mixins.ListModelMixin,
                       mixins.RetrieveModelMixin,
                       mixins.DestroyModelMixin,
-                      GenericViewSet,
-                      APIView):
+                      GenericViewSet):
     model = Customer
     queryset = Customer.objects.all()
     serializer_class = CustomerSerializer
+
+    def get_permissions(self):
+        if self.action != 'login':
+            return [IsAuthenticated()]
+
+        return []
 
     # detail:True or False
     # depending on whether this endpoint is expected to deal with a single object or a group of objects.
@@ -45,14 +51,14 @@ class CustomerViewSet(mixins.CreateModelMixin,
 
     # get_info method is the same as retrieve
     @action(detail=False, methods=['GET'])
-    @authentication_classes([TokenAuthentication])
+    # @authentication_classes([TokenAuthentication])
     def get_info(self, request, *args, **kwargs):
         instance = request.user
         serializer = CustomerGetInfoSerializer(instance)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
-    @authentication_classes([TokenAuthentication])
+    # @authentication_classes([TokenAuthentication])
     def test(self, request, *args, **kwargs):
         user = request.user
         content = {'message': 'hello this is Demo!', 'username': user.username}
