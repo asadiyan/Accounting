@@ -1,33 +1,26 @@
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import mixins, GenericViewSet
-from rest_framework.decorators import action
 
-from .serializer import AccountSerializer, AccountGetInfoSerializer
+from .serializer import AccountSerializer, AccountCreateSerializer
 
 from .models import Account
 
 
 class AccountViewSets(mixins.CreateModelMixin,
-                      mixins.UpdateModelMixin,
-                      mixins.ListModelMixin,
-                      mixins.RetrieveModelMixin,
-                      mixins.DestroyModelMixin,
+                      # mixins.UpdateModelMixin,
+                      # mixins.ListModelMixin,
+                      # mixins.RetrieveModelMixin,
+                      # mixins.DestroyModelMixin,
                       GenericViewSet
                       ):
     model = Account
     queryset = Account.objects.all()
-    serializer_class = AccountSerializer
+    serializer_class = AccountCreateSerializer
 
-    # @action(detail=False, methods=['POST'])
-    # def account_registry(self):
-    #     pass
-    #
-    # @action(detail=True, methods=['GET'])
-    # def get_info(self, request, *args, **kwargs):
-    #     instance = self.get_object()
-    #     serializer = AccountGetInfoSerializer(instance)
-    #     return Response(serializer.data)
-    #
-    # @action(detail=False, method=['POST'])
-    # def deposit(self, request):
-    #     instance = self.get_object()
+    def create(self, request, *args, **kwargs):
+        serializer = AccountCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

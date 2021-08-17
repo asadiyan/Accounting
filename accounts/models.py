@@ -9,4 +9,4 @@ class Account(models.Model):
     amount = models.IntegerField()
     created_time = models.DateTimeField(auto_now_add=True)
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT)
-    modified_time = models.DateTimeField()
+    modified_time = models.DateTimeField(auto_now=True)

@@ -7,6 +7,7 @@ from rest_framework.viewsets import mixins, GenericViewSet
 from rest_framework.decorators import action, authentication_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 from .serializer import CustomerSerializer, CustomerLoginSerializer, CustomerGetInfoSerializer
 
@@ -29,11 +30,19 @@ class CustomerViewSet(mixins.CreateModelMixin,
 
         return []
 
+    @action(detail=False, methods=['POST'])
+    def registry(self, request, *args, **kwargs):
+        serializer = CustomerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     # detail:True or False
     # depending on whether this endpoint is expected to deal with a single object or a group of objects.
     # Since we use single object of user info we have set detail=True.
     # our login method is a type of POST
-    @action(detail=False, methods=["POST"])
+    @action(detail=False, methods=['POST'])
     def login(self, request, *args, **kwargs):
         serializer = CustomerLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -45,7 +54,7 @@ class CustomerViewSet(mixins.CreateModelMixin,
             token, _ = Token.objects.get_or_create(user=customer)
             return Response(token.key)
         except Customer.DoesNotExist:
-            raise ()
+            raise Http404()
         except Customer.MultipleObjectsReturned:
             raise Http404()
 
