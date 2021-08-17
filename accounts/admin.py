@@ -2,4 +2,9 @@ from django.contrib import admin
 from .models import Account
 
 # Register your models here.
-admin.site.register(Account)
+class AccountAdmin(admin.ModelAdmin):
+    list_display = ['id', 'customer', 'amount', 'created_time', 'bank', 'modified_time']
+
+
+
+admin.site.register(Account, AccountAdmin)
