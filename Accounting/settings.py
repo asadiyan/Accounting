@@ -26,8 +26,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Application definition
+# here we change our User default to our Customer model so
+# we can get all fields of customer in request
+AUTH_USER_MODEL = "users.Customer"
 
+# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',

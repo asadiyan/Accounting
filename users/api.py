@@ -25,7 +25,7 @@ class CustomerViewSet(mixins.CreateModelMixin,
     serializer_class = CustomerSerializer
 
     def get_permissions(self):
-        if self.action != 'login':
+        if self.action not in 'login':
             return [IsAuthenticated()]
 
         return []
