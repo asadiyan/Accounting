@@ -9,6 +9,9 @@ from .models import Account
 
 from .services import check_amount
 
+from .exceptions import InventoryIsNotEnoughException
+
+
 class AccountViewSets(mixins.CreateModelMixin,
                       # mixins.UpdateModelMixin,
                       # mixins.ListModelMixin,
@@ -23,8 +26,8 @@ class AccountViewSets(mixins.CreateModelMixin,
     def create(self, request, *args, **kwargs):
         serializer = AccountCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # serializer.save(customer=request.user) here we pass the instance it self for serializer
-        serializer.save(customer_id=request.user.id)
+        # serializer.save(customer=request.user) here we pass the instance it self(object) for serializer
+        serializer.save(customer_id=request.user.id) # here we pass just id tp serializer
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -33,12 +36,12 @@ class AccountViewSets(mixins.CreateModelMixin,
         serializer = AccountTransactionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        amount = serializer.validated_data.get('transfer_amount')
-        source = serializer.validated_data.get('transfer_source')
-        destination = serializer.validated_data.get('transfer_destination')
         if check_amount(data):
+            amount = data.get('transfer_amount')
+            source = data.get('transfer_source')
+            destination = data.get('transfer_destination')
+            source.amount = source.amount - amount
+            source.save()
             return Response("done")
-
-
-
-
+        else:
+            raise InventoryIsNotEnoughException

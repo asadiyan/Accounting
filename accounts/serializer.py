@@ -1,7 +1,5 @@
 from rest_framework import serializers
 
-from rest_framework.decorators import action
-
 from histories.models import History
 from .models import Account
 
@@ -23,5 +21,3 @@ class AccountTransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = History
         fields = ['transfer_source', 'transfer_destination', 'transfer_amount']
-
-
