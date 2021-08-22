@@ -60,14 +60,12 @@ class CustomerViewSet(mixins.CreateModelMixin,
 
     # get_info method is the same as retrieve
     @action(detail=False, methods=['GET'])
-    # @authentication_classes([TokenAuthentication])
     def get_info(self, request, *args, **kwargs):
         instance = request.user
         serializer = CustomerGetInfoSerializer(instance)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
-    # @authentication_classes([TokenAuthentication])
     def test(self, request, *args, **kwargs):
         user = request.user
         content = {'message': 'hello this is Demo!', 'username': user.username}
