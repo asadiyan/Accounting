@@ -60,3 +60,4 @@ class AccountHistoryListSerializer(serializers.ModelSerializer):
             return{"full_name": obj.transfer_source.customer.get_full_name(),
                    "account_id": obj.transfer_source.id
                    }
+        return None
