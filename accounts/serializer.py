@@ -41,6 +41,22 @@ class AccountListSerializer(serializers.ModelSerializer):
 
 
 class AccountHistoryListSerializer(serializers.ModelSerializer):
+    transfer_source = serializers.SerializerMethodField()
+    transfer_destination = serializers.SerializerMethodField()
+
     class Meta:
         model = History
-        fields = ['created_time', 'transfer_amount', 'transfer_source', 'transfer_destination']
+        fields = ['created_time', 'transfer_amount', 'transfer_source', 'transfer_destination', 'account_amount']
+
+    def get_transfer_destination(self, obj):
+        if obj.transfer_destination:
+            return {"full_name": obj.transfer_destination.customer.get_full_name(),
+                    "account_id": obj.transfer_destination.id
+                    }
+        return None
+
+    def get_transfer_source(self, obj):
+        if obj.transfer_source:
+            return{"full_name": obj.transfer_source.customer.get_full_name(),
+                   "account_id": obj.transfer_source.id
+                   }

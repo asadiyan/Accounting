@@ -9,3 +9,4 @@ class History(models.Model):
     transfer_amount = models.IntegerField()
     transfer_source = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, related_name='source_account')
     transfer_destination = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, related_name="destination_account")
+    account_amount = models.PositiveBigIntegerField()

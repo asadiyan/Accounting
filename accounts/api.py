@@ -49,34 +49,19 @@ class AccountViewSets(mixins.CreateModelMixin,
         transfer_destination = get_object_or_404(Account.objects, pk=destination.id)
         transfer_amount = data.get('transfer_amount')
 
-        if transfer_source.amount > transfer_amount:
-            transfer_source.amount = transfer_source.amount - transfer_amount
-            transfer_destination.amount = transfer_destination.amount + transfer_amount
-            transfer_destination.save()
-            transfer_source.save()
-            History.objects.create(transfer_amount=transfer_amount, transfer_source=transfer_source,
-                                   transfer_destination=transfer_destination)
-            return Response('done')
-        elif source == destination:
-            raise OperationImpossibleException
+        if transfer_source.bank_id != transfer_destination.bank_id:
+            if transfer_source.amount > transfer_amount:
+                transfer_source.amount = transfer_source.amount - transfer_amount
+                transfer_destination.amount = transfer_destination.amount + transfer_amount
+                transfer_destination.save()
+                transfer_source.save()
+                History.objects.create(transfer_amount=transfer_amount, transfer_source=transfer_source,
+                                       transfer_destination=transfer_destination, account_amount=transfer_source.amount)
+                return Response('done')
+            else:
+                raise AccountBalanceIsNotEnoughException
         else:
-            raise AccountBalanceIsNotEnoughException
-        # this implementation is fore service based:
-
-        # transfer_source = data.get('transfer_source')
-        # transfer_destination = data.get('transfer_destination')
-
-        # if check_account(transfer_source):
-        #     if check_account(transfer_destination):
-        #         if check_amount(data):
-        #           do_transfer(data)
-        #           return Response('done')
-        #         else:
-        #             raise AccountBalanceIsNotEnoughException
-        #     else:
-        #         raise AccountDoesNotExist
-        # else:
-        #     raise AccountDoesNotExist
+            raise OperationImpossibleException
 
     @action(detail=False, methods=['POST'])
     def withdraw(self, request):
@@ -93,7 +78,7 @@ class AccountViewSets(mixins.CreateModelMixin,
             transfer_source.amount = transfer_source.amount - transfer_amount
             transfer_source.save()
             History.objects.create(transfer_amount=transfer_amount, transfer_source=transfer_source,
-                                   transfer_destination=None)
+                                   transfer_destination=None, account_amount=transfer_source.amount)
             return Response('done')
         else:
             raise AccountBalanceIsNotEnoughException
@@ -111,7 +96,7 @@ class AccountViewSets(mixins.CreateModelMixin,
         transfer_source.amount = transfer_source.amount + transfer_amount
         transfer_source.save()
         History.objects.create(transfer_amount=transfer_amount, transfer_source=transfer_source,
-                               transfer_destination=None)
+                               transfer_destination=None, account_amount=transfer_source.amount)
         return Response('done')
 
     @action(detail=False, methods=['GET'])
