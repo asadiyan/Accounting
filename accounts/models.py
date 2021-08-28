@@ -8,7 +8,7 @@ from banks.models import Bank
 
 class Account(models.Model):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
-    amount = models.IntegerField()
+    amount = models.PositiveBigIntegerField()
     created_time = models.DateTimeField(auto_now_add=True)
     bank = models.ForeignKey(Bank, on_delete=models.PROTECT, unique=True)
     modified_time = models.DateTimeField(auto_now=True)

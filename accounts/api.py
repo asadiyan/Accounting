@@ -3,8 +3,9 @@ from django.db.models import Q
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.viewsets import mixins, GenericViewSet
-from rest_framework.decorators import action
+from rest_framework.decorators import action, authentication_classes
 from rest_framework.generics import get_object_or_404
+from rest_framework.authentication import TokenAuthentication
 
 from .serializer import AccountSerializer, AccountCreateSerializer, AccountTransactionSerializer, \
     AccountWithdrawSerializer, AccountDepositSerializer, AccountListSerializer, AccountHistoryListSerializer
@@ -25,6 +26,7 @@ class AccountViewSets(mixins.CreateModelMixin,
                       GenericViewSet):
     model = Account
     queryset = Account.objects.all()
+
     serializer_class = AccountCreateSerializer
 
     def create(self, request, *args, **kwargs):
@@ -36,32 +38,37 @@ class AccountViewSets(mixins.CreateModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False, methods=['POST'])
+    @authentication_classes([TokenAuthentication])
     def transfer(self, request):
         serializer = AccountTransactionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        amount = data.get('transfer_amount')
         source = data.get('transfer_source')
         destination = data.get('transfer_destination')
-
-        transfer_source = get_object_or_404(Account.objects, pk=source.id)
-        transfer_destination = get_object_or_404(Account.objects, pk=destination.id)
         transfer_amount = data.get('transfer_amount')
 
-        if transfer_source.bank_id != transfer_destination.bank_id:
-            if transfer_source.amount > transfer_amount:
-                transfer_source.amount = transfer_source.amount - transfer_amount
-                transfer_destination.amount = transfer_destination.amount + transfer_amount
-                transfer_destination.save()
-                transfer_source.save()
-                History.objects.create(transfer_amount=transfer_amount, transfer_source=transfer_source,
-                                       transfer_destination=transfer_destination, account_amount=transfer_source.amount)
-                return Response('done')
-            else:
-                raise AccountBalanceIsNotEnoughException
-        else:
-            raise OperationImpossibleException
+        source.amount = source.amount - transfer_amount
+        destination.amount = destination.amount + transfer_amount
+        source.save()
+        destination.save()
+        History.objects.create(transfer_amount=transfer_amount, transfer_source=source,
+                               transfer_destination=destination, account_amount=source.amount)
+        return Response('done')
+
+        # if transfer_source.bank_id != transfer_destination.bank_id:
+        #     if transfer_source.amount > transfer_amount:
+        #         transfer_source.amount = transfer_source.amount - transfer_amount
+        #         transfer_destination.amount = transfer_destination.amount + transfer_amount
+        #         transfer_destination.save()
+        #         transfer_source.save()
+        #         History.objects.create(transfer_amount=transfer_amount, transfer_source=transfer_source,
+        #                                transfer_destination=transfer_destination, account_amount=transfer_source.amount)
+        #         return Response('done')
+        #     else:
+        #         raise AccountBalanceIsNotEnoughException
+        # else:
+        #     raise OperationImpossibleException
 
     @action(detail=False, methods=['POST'])
     def withdraw(self, request):

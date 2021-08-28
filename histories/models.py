@@ -6,7 +6,7 @@ from accounts.models import Account
 
 class History(models.Model):
     created_time = models.DateTimeField(auto_now_add=True)
-    transfer_amount = models.IntegerField()
+    transfer_amount = models.PositiveBigIntegerField()
     transfer_source = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, related_name='source_account')
     transfer_destination = models.ForeignKey(Account, on_delete=models.PROTECT, null=True, related_name="destination_account")
     account_amount = models.PositiveBigIntegerField()

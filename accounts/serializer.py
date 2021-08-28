@@ -17,9 +17,18 @@ class AccountCreateSerializer(serializers.ModelSerializer):
 
 
 class AccountTransactionSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if data.get('transfer_source').bank_id == data.get('transfer_destination').bank_id:
+            raise serializers.ValidationError('Operation is impossible! source and destination is same!')
+        elif data.get('transfer_source').amount <= data.get('transfer_amount'):
+            raise serializers.ValidationError('Account balance is not enough')
+        return data
+
     class Meta:
         model = History
         fields = ['transfer_source', 'transfer_destination', 'transfer_amount']
+        validators = []
 
 
 class AccountWithdrawSerializer(serializers.ModelSerializer):
