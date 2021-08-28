@@ -32,6 +32,11 @@ class AccountTransactionSerializer(serializers.ModelSerializer):
 
 
 class AccountWithdrawSerializer(serializers.ModelSerializer):
+
+    def validate(self, data):
+        if data.get('transfer_source').amount <= data.get('transfer_amount'):
+            raise serializers.ValidationError('Account balance is not enough')
+
     class Meta:
         model = History
         fields = ['transfer_source', 'transfer_amount']
