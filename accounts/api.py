@@ -27,11 +27,8 @@ class AccountViewSets(mixins.CreateModelMixin,
                       GenericViewSet):
     model = Account
     queryset = Account.objects.all()
-
     serializer_class = AccountCreateSerializer
 
-    @authentication_classes([TokenAuthentication])
-    # @permission_classes([AllowAny])
     def create(self, request, *args, **kwargs):
         serializer = AccountCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -41,7 +38,6 @@ class AccountViewSets(mixins.CreateModelMixin,
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     @action(detail=False, methods=['POST'])
-    @authentication_classes([TokenAuthentication])
     def transfer(self, request):
         serializer = AccountTransactionSerializer(data=request.data)
         # we have a validation method inside our serializer we defined it by our need
@@ -60,7 +56,7 @@ class AccountViewSets(mixins.CreateModelMixin,
         source.save()
         destination.save()
 
-        # with this action serializer.save we create a object inside model of history
+        # with this action serializer.save() we create a object inside model of history
         # because AccountTransactionSerializer is our serializer and its model is history
         # so requirement fields for creating a history is:
         # created_time,transfer_amount,transfer_source,transfer_destination,account_amount
@@ -71,7 +67,6 @@ class AccountViewSets(mixins.CreateModelMixin,
         return Response('done')
 
     @action(detail=False, methods=['POST'])
-    @authentication_classes([TokenAuthentication])
     def withdraw(self, request):
         serializer = AccountWithdrawSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -86,22 +81,20 @@ class AccountViewSets(mixins.CreateModelMixin,
         return Response('done')
 
     @action(detail=False, methods=['POST'])
-    @authentication_classes([TokenAuthentication])
     def deposit(self, request):
         serializer = AccountDepositSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        source = data.get('transfer_source')
+        destination = data.get('transfer_destination')
 
         transfer_amount = data.get('transfer_amount')
-        source.amount = source.amount + transfer_amount
-        source.save()
-        serializer.save(account_amount=source.amount)
+        destination.amount = destination.amount + transfer_amount
+        destination.save()
+        serializer.save(account_amount=destination.amount)
         return Response('done')
 
     @action(detail=False, methods=['GET'])
-    @authentication_classes([TokenAuthentication])
     def my_accounts(self, request):
         model = Account
         queryset = model.objects.filter(customer=request.user)
@@ -115,9 +108,8 @@ class AccountViewSets(mixins.CreateModelMixin,
         return Response(serializer.data)
 
     @action(detail=True, methods=['GET'])
-    @authentication_classes([TokenAuthentication])
     def history(self, request, pk):
-        queryset = History.objects.filter(Q(transfer_source=pk) | Q(transfer_destination=pk))
+        queryset = History.objects.filter(Q(transfer_source=pk) | Q(transfer_destination=pk)).order_by('-created_time')
 
         page = self.paginate_queryset(queryset)
         if page is not None:

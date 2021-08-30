@@ -36,6 +36,7 @@ class AccountWithdrawSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('transfer_source').amount <= data.get('transfer_amount'):
             raise serializers.ValidationError('Account balance is not enough')
+        return data
 
     class Meta:
         model = History
@@ -45,7 +46,7 @@ class AccountWithdrawSerializer(serializers.ModelSerializer):
 class AccountDepositSerializer(serializers.ModelSerializer):
     class Meta:
         model = History
-        fields = ['transfer_source', 'transfer_amount']
+        fields = ['transfer_destination', 'transfer_amount']
 
 
 class AccountListSerializer(serializers.ModelSerializer):
@@ -60,11 +61,12 @@ class AccountHistoryListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = History
-        fields = ['created_time', 'transfer_amount', 'transfer_source', 'transfer_destination', 'account_amount']
+        fields = ['id', 'created_time', 'transfer_amount', 'transfer_source', 'transfer_destination', 'account_amount']
 
     def get_transfer_destination(self, obj):
         if obj.transfer_destination:
             return {"full_name": obj.transfer_destination.customer.get_full_name(),
+                    "bank_name": obj.transfer_destination.bank.name,
                     "account_id": obj.transfer_destination.id
                     }
         return None
@@ -72,6 +74,7 @@ class AccountHistoryListSerializer(serializers.ModelSerializer):
     def get_transfer_source(self, obj):
         if obj.transfer_source:
             return{"full_name": obj.transfer_source.customer.get_full_name(),
+                   "bank_name": obj.transfer_source.bank.name,
                    "account_id": obj.transfer_source.id
                    }
         return None
