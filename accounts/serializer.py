@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from histories.models import History
+from accounts.histories.models import History
 from .models import Account
 
 
@@ -50,9 +50,16 @@ class AccountDepositSerializer(serializers.ModelSerializer):
 
 
 class AccountListSerializer(serializers.ModelSerializer):
+    bank = serializers.SerializerMethodField()
+
     class Meta:
         model = Account
         fields = ['id', 'customer', 'amount', 'created_time', 'bank', 'modified_time']
+
+    def get_bank(self, obj):
+        return {'bank_name': obj.bank.name,
+                'bank_id': obj.bank.id
+                }
 
 
 class AccountHistoryListSerializer(serializers.ModelSerializer):
@@ -65,9 +72,9 @@ class AccountHistoryListSerializer(serializers.ModelSerializer):
 
     def get_transfer_destination(self, obj):
         if obj.transfer_destination:
-            return {"full_name": obj.transfer_destination.customer.get_full_name(),
-                    "bank_name": obj.transfer_destination.bank.name,
-                    "account_id": obj.transfer_destination.id
+            return {'full_name': obj.transfer_destination.customer.get_full_name(),
+                    'bank_name': obj.transfer_destination.bank.name,
+                    'account_id': obj.transfer_destination.id
                     }
         return None
 

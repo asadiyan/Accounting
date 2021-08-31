@@ -2,7 +2,7 @@
 from rest_framework.generics import get_object_or_404
 
 from accounts.models import Account
-from histories.models import History
+from accounts.histories import History
 
 
 def check_account(account):

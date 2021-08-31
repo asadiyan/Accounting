@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     # your project`s apps
     'users',
     'accounts',
-    'histories',
+    'accounts.histories',
     'banks',
 ]
 

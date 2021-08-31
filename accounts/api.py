@@ -4,22 +4,15 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.viewsets import mixins, GenericViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.generics import get_object_or_404
-from rest_framework.decorators import action, authentication_classes, permission_classes
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.decorators import action
 from rest_framework import filters
 
 
-from .serializer import AccountSerializer, AccountCreateSerializer, AccountTransactionSerializer, \
+from .serializer import AccountCreateSerializer, AccountTransactionSerializer, \
     AccountWithdrawSerializer, AccountDepositSerializer, AccountListSerializer, AccountHistoryListSerializer
 
 from .models import Account
-from histories.models import History
-
-from .services import check_amount, do_transfer, check_account
-
-from .exceptions import AccountBalanceIsNotEnoughException, AccountDoesNotExist, OperationImpossibleException
+from accounts.histories.models import History
 
 
 class AccountViewSets(mixins.CreateModelMixin,
@@ -102,7 +95,7 @@ class AccountViewSets(mixins.CreateModelMixin,
     @action(detail=False, methods=['GET'])
     def my_accounts(self, request):
         model = Account
-        queryset = model.objects.filter(customer=request.user)
+        queryset = model.objects.filter(customer=request.user).order_by('modified_time')
 
         serializer = AccountListSerializer(queryset, many=True)
         return Response(serializer.data)
