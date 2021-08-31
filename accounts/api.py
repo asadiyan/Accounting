@@ -1,4 +1,5 @@
 from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.viewsets import mixins, GenericViewSet
 from rest_framework.response import Response
@@ -8,6 +9,7 @@ from rest_framework.decorators import action, authentication_classes, permission
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import filters
+
 
 from .serializer import AccountSerializer, AccountCreateSerializer, AccountTransactionSerializer, \
     AccountWithdrawSerializer, AccountDepositSerializer, AccountListSerializer, AccountHistoryListSerializer
@@ -29,6 +31,8 @@ class AccountViewSets(mixins.CreateModelMixin,
     model = Account
     queryset = Account.objects.all()
     serializer_class = AccountCreateSerializer
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    ordering_fields = ['__all__']
 
     def create(self, request, *args, **kwargs):
         serializer = AccountCreateSerializer(data=request.data)
@@ -110,14 +114,12 @@ class AccountViewSets(mixins.CreateModelMixin,
 
     @action(detail=True, methods=['GET'])
     def history(self, request, pk):
-        filter_backend = [filters.OrderingFilter]
-        ordering_fields = ['created_time']
 
         def get_queryset(request):
-            params = request.query_params.get('type')
-            if params == 'deposit':
+            transfer_type = request.query_params.get('type')
+            if transfer_type == 'deposit':
                 queryset = History.objects.filter(transfer_destination=pk)
-            elif params == 'withdraw':
+            elif transfer_type == 'withdraw':
                 queryset = History.objects.filter(transfer_source=pk)
             else:
                 queryset = History.objects.filter(Q(transfer_source=pk) | Q(transfer_destination=pk)).order_by(
