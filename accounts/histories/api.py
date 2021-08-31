@@ -1,4 +1,6 @@
 from django.db.models import Q
+from django_filters import filters
+from django_filters.rest_framework import DjangoFilterBackend
 
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -15,8 +17,12 @@ class HistoryViewSet(  # mixins.CreateModelMixin,
                     # mixins.RetrieveModelMixin,
                     # mixins.DestroyModelMixin,
                     GenericViewSet):
+
     model = History
+    queryset = model.objects.all()
     serializer_class = HistoryListSerializer
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    ordering_fields = ['__all__']
 
     @action(detail=False, methods=['GET'])
     def history(self, request, pk):
