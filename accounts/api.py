@@ -7,6 +7,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.decorators import action, authentication_classes, permission_classes
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework import filters
 
 from .serializer import AccountSerializer, AccountCreateSerializer, AccountTransactionSerializer, \
     AccountWithdrawSerializer, AccountDepositSerializer, AccountListSerializer, AccountHistoryListSerializer
@@ -109,12 +110,19 @@ class AccountViewSets(mixins.CreateModelMixin,
 
     @action(detail=True, methods=['GET'])
     def history(self, request, pk):
-        queryset = History.objects.filter(Q(transfer_source=pk) | Q(transfer_destination=pk)).order_by('-created_time')
+        filter_backend = [filters.OrderingFilter]
+        ordering_fields = ['created_time']
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = AccountHistoryListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        def get_queryset(request):
+            params = request.query_params.get('type')
+            if params == 'deposit':
+                queryset = History.objects.filter(transfer_destination=pk)
+            elif params == 'withdraw':
+                queryset = History.objects.filter(transfer_source=pk)
+            else:
+                queryset = History.objects.filter(Q(transfer_source=pk) | Q(transfer_destination=pk)).order_by(
+                    '-created_time')
+            return queryset
 
-        serializer = AccountHistoryListSerializer(queryset, many=True)
+        serializer = AccountHistoryListSerializer(get_queryset(request), many=True)
         return Response(serializer.data)
