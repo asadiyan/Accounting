@@ -104,11 +104,6 @@ class AccountViewSets(mixins.CreateModelMixin,
         model = Account
         queryset = model.objects.filter(customer=request.user)
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = AccountListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
         serializer = AccountListSerializer(queryset, many=True)
         return Response(serializer.data)
 
