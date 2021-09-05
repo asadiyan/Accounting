@@ -25,7 +25,7 @@ class AccountViewSets(mixins.CreateModelMixin,
     queryset = Account.objects.all()
     serializer_class = AccountCreateSerializer
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    ordering_fields = ['__all__']
+    ordering_fields = '__all__'
 
     def create(self, request, *args, **kwargs):
         serializer = AccountCreateSerializer(data=request.data)

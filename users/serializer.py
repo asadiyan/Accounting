@@ -23,17 +23,22 @@ class CustomerGetInfoSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.IntegerField()
 
-    def get_first_name(self, obj):
+    @staticmethod
+    def get_first_name(obj):
         return obj.first_name
 
-    def get_last_name(self, obj):
+    @staticmethod
+    def get_last_name(obj):
         return obj.last_name
 
-    def get_identity_code(self, obj):
+    @staticmethod
+    def get_identity_code(obj):
         return obj.identity_code
 
-    def get_username(self, obj):
+    @staticmethod
+    def get_username(obj):
         return obj.username
 
-    def get_password(self, obj):
+    @staticmethod
+    def get_password(obj):
         return obj.password

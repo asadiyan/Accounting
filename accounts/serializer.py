@@ -18,7 +18,8 @@ class AccountCreateSerializer(serializers.ModelSerializer):
 
 class AccountTransactionSerializer(serializers.ModelSerializer):
 
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         if data.get('transfer_source').bank_id == data.get('transfer_destination').bank_id:
             raise serializers.ValidationError('Operation is impossible! source and destination is same!')
         elif data.get('transfer_source').amount <= data.get('transfer_amount'):
@@ -33,7 +34,8 @@ class AccountTransactionSerializer(serializers.ModelSerializer):
 
 class AccountWithdrawSerializer(serializers.ModelSerializer):
 
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         if data.get('transfer_source').amount <= data.get('transfer_amount'):
             raise serializers.ValidationError('Account balance is not enough')
         return data
@@ -56,7 +58,8 @@ class AccountListSerializer(serializers.ModelSerializer):
         model = Account
         fields = ['id', 'customer', 'amount', 'created_time', 'bank', 'modified_time']
 
-    def get_bank(self, obj):
+    @staticmethod
+    def get_bank(obj):
         return {'bank_name': obj.bank.name,
                 'bank_id': obj.bank.id
                 }
@@ -70,7 +73,8 @@ class AccountHistoryListSerializer(serializers.ModelSerializer):
         model = History
         fields = ['id', 'created_time', 'transfer_amount', 'transfer_source', 'transfer_destination', 'account_amount']
 
-    def get_transfer_destination(self, obj):
+    @staticmethod
+    def get_transfer_destination(obj):
         if obj.transfer_destination:
             return {'full_name': obj.transfer_destination.customer.get_full_name(),
                     'bank_name': obj.transfer_destination.bank.name,
@@ -78,7 +82,8 @@ class AccountHistoryListSerializer(serializers.ModelSerializer):
                     }
         return None
 
-    def get_transfer_source(self, obj):
+    @staticmethod
+    def get_transfer_source(obj):
         if obj.transfer_source:
             return{"full_name": obj.transfer_source.customer.get_full_name(),
                    "bank_name": obj.transfer_source.bank.name,

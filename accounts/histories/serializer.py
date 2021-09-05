@@ -6,7 +6,7 @@ from .models import History
 class HistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = History
-        fields = ['created_time', 'transfer_amount', 'transfer_source', 'transfer_destination']
+        fields = '__all__'
 
 
 class HistoryListSerializer(serializers.ModelSerializer):
@@ -17,7 +17,8 @@ class HistoryListSerializer(serializers.ModelSerializer):
         model = History
         fields = ['id', 'created_time', 'transfer_amount', 'transfer_source', 'transfer_destination', 'account_amount']
 
-    def get_transfer_destination(self, obj):
+    @staticmethod
+    def get_transfer_destination(obj):
         if obj.transfer_destination:
             return {'full_name': obj.transfer_destination.customer.get_full_name(),
                     'bank_name': obj.transfer_destination.bank.name,
@@ -25,7 +26,8 @@ class HistoryListSerializer(serializers.ModelSerializer):
                     }
         return None
 
-    def get_transfer_source(self, obj):
+    @staticmethod
+    def get_transfer_source(obj):
         if obj.transfer_source:
             return{"full_name": obj.transfer_source.customer.get_full_name(),
                    "bank_name": obj.transfer_source.bank.name,
